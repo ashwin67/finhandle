@@ -1,6 +1,8 @@
 from ..models.transaction import Transaction
 import pandas as pd
 from ..app import db
+from flask_login import current_user
+from datetime import datetime
 
 def parse_transactions(file):
     # Read the file using pandas
@@ -11,14 +13,16 @@ def parse_transactions(file):
 
     # Save the parsed transactions to the database
     for index, row in df.iterrows():
+        date_format = "%d.%m.%Y"
+        date_object = datetime.strptime(row["date"], date_format).date()
         transaction = Transaction(
-            date=row["date"],
+            date=date_object,
             description=row["description"],
             amount=row["amount"],
             category=row["category"]
         )
         # Add the user ID to the transaction
-        transaction.user_id = user_id
+        transaction.user_id = current_user.id
 
         db.session.add(transaction)
     db.session.commit()
