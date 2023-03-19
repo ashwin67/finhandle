@@ -1,6 +1,5 @@
-# models/fin_user.py
 from flask_login import UserMixin
-from ..app import db
+from app import db
 
 class FinUser(UserMixin, db.Model):
     __tablename__ = 'fin_user'

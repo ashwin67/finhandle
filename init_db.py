@@ -1,9 +1,10 @@
-from app import db
-from app import app  # Import the app object from the app package
-from models.fin_user import FinUser  # Import all necessary models here
-from models.transaction import Transaction
 from sqlalchemy import MetaData
 import os
+
+from app import db
+from app import app
+from models.fin_user import FinUser
+from models.transaction import Transaction
 
 def delete_existing_database():
     db_file = 'finhandle.db'  # Your database filename

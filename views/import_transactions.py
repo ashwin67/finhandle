@@ -1,8 +1,9 @@
-from ..models.transaction import Transaction
 import pandas as pd
-from ..app import db
 from flask_login import current_user
 from datetime import datetime
+
+from models.transaction import Transaction
+from app import db
 
 def parse_transactions(file):
     # Read the file using pandas

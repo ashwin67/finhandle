@@ -13,8 +13,8 @@ app.secret_key = os.urandom(24)  # Generate a random key for secure sessions
 db = SQLAlchemy()
 db.init_app(app)
 
-from .models.fin_user import FinUser
-from .models.transaction import Transaction
+from models.fin_user import FinUser
+from models.transaction import Transaction
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -27,9 +27,9 @@ GOOGLE_DISCOVERY_DOC = (
     "https://accounts.google.com/.well-known/openid-configuration"
 )
 
-from .views.forms import TransactionUploadForm
-from .views.auth import auth
-from .views.import_transactions import parse_transactions
+from views.forms import TransactionUploadForm
+from views.auth import auth
+from views.import_transactions import parse_transactions
 app.register_blueprint(auth, url_prefix='/auth')
 
 
