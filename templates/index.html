@@ -1,6 +1,71 @@
-<!-- templates/import_transactions.html -->
-{% extends "layout.html" %}
+{% extends "base.html" %}
+
+{% block title %} - Dashboard{% endblock %}
 
 {% block content %}
-  <!-- Import transactions form and other content -->
+  <div class="container mt-5">
+      <h1 class="text-center mb-4">FinHandle Dashboard</h1>
+      <div class="row">
+          <div class="col-md-4">
+              <div class="card text-white bg-primary mb-3">
+                  <div class="card-header">Total Balance</div>
+                  <div class="card-body">
+                      <h4 class="card-title">$12,345.67</h4>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-4">
+              <div class="card text-white bg-success mb-3">
+                  <div class="card-header">Income This Month</div>
+                  <div class="card-body">
+                      <h4 class="card-title">$2,500.00</h4>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-4">
+              <div class="card text-white bg-danger mb-3">
+                  <div class="card-header">Expenses This Month</div>
+                  <div class="card-body">
+                      <h4 class="card-title">$1,750.00</h4>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-md-6">
+              <h3 class="text-center">Latest Transactions</h3>
+              <table class="table table-striped">
+                  <thead>
+                      <tr>
+                          <th>Date</th>
+                          <th>Description</th>
+                          <th>Amount</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr>
+                          <td>2023-03-15</td>
+                          <td>Salary</td>
+                          <td class="text-success">+ $2,000.00</td>
+                      </tr>
+                      <tr>
+                          <td>2023-03-14</td>
+                          <td>Groceries</td>
+                          <td class="text-danger">- $75.00</td>
+                      </tr>
+                      <tr>
+                          <td>2023-03-12</td>
+                          <td>Electricity Bill</td>
+                          <td class="text-danger">- $100.00</td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+          <div class="col-md-6">
+              <h3 class="text-center">Monthly Spending Categories</h3>
+              <!-- Add a pie chart or bar chart here using a chart library like Chart.js or Google Charts -->
+          </div>
+      </div>
+  </div>
+
 {% endblock %}

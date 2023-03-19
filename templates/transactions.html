@@ -1,6 +1,6 @@
 <!-- transactions.html -->
-{% extends "layout.html" %}
-
+{% extends "base.html" %}
+{% block title %} - Transactions{% endblock %}
 {% block content %}
   <h1>Transactions</h1>
   <a href="{{ url_for('import_transactions') }}">Import Transactions</a>

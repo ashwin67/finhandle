@@ -1,6 +1,6 @@
 <!-- import_transactions.html -->
-{% extends "layout.html" %}
-
+{% extends "base.html" %}
+{% block title %} - Transactions{% endblock %}
 {% block content %}
   <h1>Import Transactions</h1>
   <form action="{{ url_for('import_transactions') }}" method="POST" enctype="multipart/form-data">
