@@ -1,9 +1,15 @@
-<!-- import_transactions.html -->
 {% extends "base.html" %}
 {% block title %} - Transactions{% endblock %}
 {% block content %}
   <h1>Import Transactions</h1>
   <form action="{{ url_for('import_transactions') }}" method="POST" enctype="multipart/form-data">
+    <label for="account_type">Account Type:</label>
+    <select name="account_type" id="account_type">
+      <option value="bank">Bank</option>
+      <option value="card">Card</option>
+      <option value="cash">Cash</option>
+    </select>
+    <br>
     {{ form.hidden_tag() }}
     {{ form.file.label }} {{ form.file }}
     {{ form.submit }}

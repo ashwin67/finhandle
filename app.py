@@ -45,7 +45,8 @@ def import_transactions():
     form = TransactionUploadForm()
     if form.validate_on_submit():
         file = form.file.data
-        parse_transactions(file)
+        account_type = request.form.get('account_type')
+        parse_transactions(file, account_type)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("transactions"))
     return render_template("import_transactions.html", form=form)

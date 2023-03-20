@@ -4,24 +4,25 @@ from datetime import datetime
 
 from models.transaction import Transaction
 from app import db
+import re
 
-def parse_transactions(file):
+def parse_transactions(file, account_type):
     # Read the file using pandas
     df = pd.read_csv(file)
 
     # Clean and format the data
     # This step depends on the structure of your transaction file
-
+    import pdb; pdb.set_trace()
     # Save the parsed transactions to the database
     for index, row in df.iterrows():
-        date_format = "%d.%m.%Y"
-        date_object = datetime.strptime(row["date"], date_format).date()
+        date_format = "%Y%m%d"
+        date_object = datetime.strptime(str(row["transactiondate"]), date_format).date()
         transaction = Transaction(
             date=date_object,
             amount=row["amount"],
-            description=row["description"],
-            account=row["account"],
-            category=row["category"]
+            description=extract_name_from_description(row["description"]),
+            account=account_type,
+            category='Uncategorized'
         )
         # Add the user ID to the transaction
         transaction.user_id = current_user.id
@@ -29,3 +30,10 @@ def parse_transactions(file):
         db.session.add(transaction)
     db.session.commit()
 
+def extract_name_from_description(description):
+    name_pattern = re.compile(r"/NAME/(.*?)/")
+    match = name_pattern.search(description)
+    if match:
+        return match.group(1)
+    else:
+        return ""
