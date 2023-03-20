@@ -18,8 +18,9 @@ def parse_transactions(file):
         date_object = datetime.strptime(row["date"], date_format).date()
         transaction = Transaction(
             date=date_object,
-            description=row["description"],
             amount=row["amount"],
+            description=row["description"],
+            account=row["account"],
             category=row["category"]
         )
         # Add the user ID to the transaction
