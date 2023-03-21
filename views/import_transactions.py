@@ -12,22 +12,25 @@ def parse_transactions(file, account_type):
 
     # Clean and format the data
     # This step depends on the structure of your transaction file
-    import pdb; pdb.set_trace()
+    missed_rows = []
     # Save the parsed transactions to the database
     for index, row in df.iterrows():
-        date_format = "%Y%m%d"
-        date_object = datetime.strptime(str(row["transactiondate"]), date_format).date()
-        transaction = Transaction(
-            date=date_object,
-            amount=row["amount"],
-            description=extract_name_from_description(row["description"]),
-            account=account_type,
-            category='Uncategorized'
-        )
-        # Add the user ID to the transaction
-        transaction.user_id = current_user.id
-
-        db.session.add(transaction)
+        try:
+            date_format = "%Y%m%d"
+            date_object = datetime.strptime(str(row["transactiondate"]), date_format).date()
+            transaction = Transaction(
+                date=date_object,
+                amount=row["amount"],
+                description=extract_name_from_description(row["description"]),
+                account=account_type,
+                category='Uncategorized'
+            )
+            # Add the user ID to the transaction
+            transaction.user_id = current_user.id
+            db.session.add(transaction)
+        except Exception as e:
+            missed_rows.append(index)
+            print("Error parsing row {}: {}".format(index, e))
     db.session.commit()
 
 def extract_name_from_description(description):

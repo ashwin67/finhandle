@@ -54,8 +54,26 @@ def import_transactions():
 @app.route("/transactions")
 def transactions():
     user_id = current_user.id
-    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
     return render_template("transactions.html", transactions=transactions)
+
+@app.route('/delete_all_transactions', methods=['GET', 'POST'])
+def delete_all_transactions():
+    user_id = current_user.id
+    Transaction.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
+    return redirect(url_for('transactions'))
+
+@app.route('/delete_transaction/<int:transaction_id>', methods=['GET', 'POST'])
+def delete_transaction(transaction_id):
+    transaction = Transaction.query.get(transaction_id)
+    if transaction and transaction.user_id == current_user.id:
+        db.session.delete(transaction)
+        db.session.commit()
+    return redirect(url_for('transactions'))
+
 
 @app.route("/authorize")
 def authorize():

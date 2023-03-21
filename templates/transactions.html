@@ -1,10 +1,15 @@
 <!-- transactions.html -->
 {% extends "base.html" %}
 {% block title %} - Transactions{% endblock %}
+{% block extra_header %} 
+  <!-- Add these links to include DataTables -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+{% endblock %}
 {% block content %}
   <h1>Transactions</h1>
   <a href="{{ url_for('import_transactions') }}">Import Transactions</a>
-  <table>
+  <button onclick="location.href='{{ url_for('delete_all_transactions') }}'">Delete All Transactions</button>
+  <table id="transactions-table">
     <thead>
       <tr>
         <th>Date</th>
@@ -22,8 +27,28 @@
           <td>{{ transaction.description }}</td>
           <td>{{ transaction.account }}</td>
           <td>{{ transaction.category }}</td>
+          <td><button onclick="location.href='{{ url_for('delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
         </tr>
       {% endfor %}
+      <div>
+        {% if transactions.has_prev %}
+            <a href="{{ url_for('transactions', page=transactions.prev_num) }}">Previous</a>
+        {% endif %}
+        <span>Page {{ transactions.page }} of {{ transactions.pages }}</span>
+        {% if transactions.has_next %}
+            <a href="{{ url_for('transactions', page=transactions.next_num) }}">Next</a>
+        {% endif %}
+      </div>
     </tbody>
   </table>
+{% endblock %}
+{% block extra_scripts %}
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script>
+  $(document).ready(function() {
+      $('#transactions-table').DataTable();
+  });
+  </script>
+  
 {% endblock %}
