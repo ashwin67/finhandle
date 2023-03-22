@@ -1,7 +1,5 @@
 {% extends "base.html" %}
-
 {% block title %} - Dashboard{% endblock %}
-
 {% block content %}
   <div class="container mt-5">
       <h1 class="text-center mb-4">FinHandle Dashboard</h1>
@@ -10,15 +8,20 @@
               <div class="card text-white bg-primary mb-3">
                   <div class="card-header">Total Balance</div>
                   <div class="card-body">
-                      <h4 class="card-title">$12,345.67</h4>
-                  </div>
+                    {% if current_user.is_authenticated %}
+                    <h4 class="card-title">${{ total_balance|round(2) }}</h4>
+                    {% else %}
+                    <h4 class="card-title">Please Login</h4>
+                    {% endif %}
+                </div>
+                
               </div>
           </div>
           <div class="col-md-4">
               <div class="card text-white bg-success mb-3">
                   <div class="card-header">Income This Month</div>
                   <div class="card-body">
-                      <h4 class="card-title">$2,500.00</h4>
+                      <h4 class="card-title">${{ income_this_month }}</h4>
                   </div>
               </div>
           </div>
@@ -26,52 +29,65 @@
               <div class="card text-white bg-danger mb-3">
                   <div class="card-header">Expenses This Month</div>
                   <div class="card-body">
-                      <h4 class="card-title">$1,750.00</h4>
+                      <h4 class="card-title">${{ expenses_this_month }}</h4>
                   </div>
               </div>
           </div>
       </div>
+      <br />
       <div class="row">
-          <div class="col-md-6">
-              <h3 class="text-center">Latest Transactions</h3>
-              <table class="table table-striped">
-                  <thead>
-                      <tr>
-                          <th>Date</th>
-                          <th>Description</th>
-                          <th>Amount</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr>
-                          <td>2023-03-15</td>
-                          <td>Salary</td>
-                          <td class="text-success">+ $2,000.00</td>
-                      </tr>
-                      <tr>
-                          <td>2023-03-14</td>
-                          <td>Groceries</td>
-                          <td class="text-danger">- $75.00</td>
-                      </tr>
-                      <tr>
-                          <td>2023-03-12</td>
-                          <td>Electricity Bill</td>
-                          <td class="text-danger">- $100.00</td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-          <div class="col-md-6">
-              <h3 class="text-center">Monthly Spending Categories</h3>
-              <!-- Add a pie chart or bar chart here using a chart library like Chart.js or Google Charts -->
-          </div>
+        <div class="col-md-6">
+            <h3 class="text-center">Monthly Spending Categories</h3>
+            {% if current_user.is_authenticated %}
+            <canvas id="myChart"></canvas>
+            {% else %}
+            <p class="text-center">Please Login</p>
+            {% endif %}
+        </div>        
       </div>
-      <!-- show a link to all transactions -->
+      <br />
         <div class="row">
             <div class="col-md-12 text-center">
                 <a href="/transactions" class="btn btn-primary">View All Transactions</a>
             </div>
         </div>
   </div>
+
+{% endblock %}
+{% block extra_scripts %}
+{% if current_user.is_authenticated %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var monthlySpendingByCategory = {{ monthly_spending_by_category|tojson }};
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var categories = Object.keys(monthlySpendingByCategory);
+    var datasets = categories.map(function(category, index) {
+        var data = monthlySpendingByCategory[category];
+        var color = 'hsl(' + (index * 45) + ', 50%, 50%)';  // Generate a different color for each category
+        return {
+            label: category,
+            data: data,
+            backgroundColor: color,
+            borderColor: color,
+            borderWidth: 1
+        };
+    });
+
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
 
 {% endblock %}

@@ -1,5 +1,8 @@
 from flask_login import UserMixin
 from app import db
+from models.transaction import Transaction
+from sqlalchemy import extract
+from datetime import datetime
 
 class FinUser(UserMixin, db.Model):
     __tablename__ = 'fin_user'
@@ -26,3 +29,28 @@ class FinUser(UserMixin, db.Model):
 
     def get_id(self):
         return str(self.id)
+
+    def get_transactions(self):
+        return Transaction.query.filter_by(user_id=self.id)
+
+    @property
+    def total_balance(self):
+        transactions = self.get_transactions()
+        return sum(transaction.amount for transaction in transactions)
+
+    def get_monthly_spending_by_category(self):
+        transactions = self.get_transactions().filter(
+            extract('year', Transaction.date) == datetime.utcnow().year
+        )
+        categories = set(transaction.category for transaction in transactions)
+        monthly_spending_by_category = {category: [0] * 12 for category in categories}
+
+        for transaction in transactions:
+            month = transaction.date.month - 1  # Subtract 1 because list indices start at 0
+            category = transaction.category
+            amount = transaction.amount
+            monthly_spending_by_category[category][month] += amount
+
+        return monthly_spending_by_category
+    
+

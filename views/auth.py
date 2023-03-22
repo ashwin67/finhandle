@@ -46,7 +46,7 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             flash('Logged in successfully.')
-            return redirect(url_for('transactions'))  # Replace with the route you want to redirect the user to after login
+            return redirect(url_for('index'))  # Replace with the route you want to redirect the user to after login
 
         flash('Invalid username or password.')
 

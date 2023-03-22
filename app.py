@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import current_user, LoginManager
+from flask_login import login_required
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func, extract
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finhandle.db'  # Use the appropriate database URI for your setup
@@ -33,10 +36,16 @@ from views.import_transactions import parse_transactions
 app.register_blueprint(auth, url_prefix='/auth')
 
 
-# App routes
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    if current_user.is_authenticated:
+        total_balance = current_user.total_balance
+        monthly_spending_by_category = current_user.get_monthly_spending_by_category()
+    else:
+        total_balance = 0
+        monthly_spending_by_category = {}
+    return render_template('index.html', total_balance=total_balance, monthly_spending_by_category=monthly_spending_by_category)
+
 
 # Add more routes here for your views (e.g., stocks, assets, summary)
 
@@ -48,7 +57,7 @@ def import_transactions():
         account_type = request.form.get('account_type')
         parse_transactions(file, account_type)
         flash("Transactions imported successfully!", "success")
-        return redirect(url_for("transactions"))
+        return redirect(url_for("index"))
     return render_template("import_transactions.html", form=form)
 
 @app.route("/transactions")
@@ -79,6 +88,18 @@ def delete_transaction(transaction_id):
 def authorize():
     # Implement OAuth2 authorization functionality
     pass
+
+@app.route('/api/transactions')
+@login_required
+def api_transactions():
+    transactions = current_user.transactions
+    return jsonify([{
+        'date': transaction.date.isoformat(),
+        'amount': transaction.amount,
+        'description': transaction.description,
+        'account': transaction.account,
+        'category': transaction.category,
+    } for transaction in transactions])
 
 @login_manager.user_loader
 def load_user(user_id):
