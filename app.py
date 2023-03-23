@@ -18,6 +18,7 @@ db.init_app(app)
 
 from models.fin_user import FinUser
 from models.transaction import Transaction
+from models.parameter import Parameter
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -30,7 +31,7 @@ GOOGLE_DISCOVERY_DOC = (
     "https://accounts.google.com/.well-known/openid-configuration"
 )
 
-from views.forms import TransactionUploadForm
+from views.forms import TransactionUploadForm, AddAccountForm
 from views.auth import auth
 from views.import_transactions import parse_transactions
 app.register_blueprint(auth, url_prefix='/auth')
@@ -52,13 +53,26 @@ def index():
 @app.route("/transactions/import", methods=["GET", "POST"])
 def import_transactions():
     form = TransactionUploadForm()
+    add_account_form = AddAccountForm()
+    existing_accounts = Parameter.query.filter_by(type='account').all()
     if form.validate_on_submit():
         file = form.file.data
-        account_type = request.form.get('account_type')
+        account_type = Parameter.query.get(form.account.data)
         parse_transactions(file, account_type)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("index"))
-    return render_template("import_transactions.html", form=form)
+    return render_template("import_transactions.html", form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
+
+@app.route("/add_account", methods=["POST"])
+def add_account():
+    form = AddAccountForm()
+    if form.validate_on_submit():
+        account_name = form.account_name.data
+        new_account = Parameter(type="account", name=account_name)
+        db.session.add(new_account)
+        db.session.commit()
+        flash("Account added successfully!", "success")
+    return redirect(url_for("import_transactions"))
 
 @app.route("/transactions")
 def transactions():

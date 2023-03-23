@@ -1,5 +1,6 @@
 from datetime import datetime
 from app import db
+from models.parameter import Parameter
 
 class Transaction(db.Model):
     __tablename__ = 'transaction'
@@ -7,7 +8,8 @@ class Transaction(db.Model):
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    account = db.Column(db.String(50), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("parameter.id"), nullable=False)
+    account = db.relationship('Parameter', foreign_keys=[account_id])
     category = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("fin_user.id"), nullable=False)
     user = db.relationship('FinUser', backref=db.backref('transactions', lazy=True))

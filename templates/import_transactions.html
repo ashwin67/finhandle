@@ -3,15 +3,40 @@
 {% block content %}
   <h1>Import Transactions</h1>
   <form action="{{ url_for('import_transactions') }}" method="POST" enctype="multipart/form-data">
-    <label for="account_type">Account Type:</label>
-    <select name="account_type" id="account_type">
-      <option value="bank">Bank</option>
-      <option value="card">Card</option>
-      <option value="cash">Cash</option>
-    </select>
-    <br>
     {{ form.hidden_tag() }}
+    {{ form.account.label }} {{ form.account }}
     {{ form.file.label }} {{ form.file }}
     {{ form.submit }}
   </form>
+  <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+    Add Account
+  </button>
+  <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAccountModalLabel">Add Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addAccountForm" action="{{ url_for('add_account') }}" method="POST">
+            {{ add_account_form.hidden_tag() }}
+            {{ add_account_form.account_name.label }} {{ add_account_form.account_name }}
+            {{ add_account_form.submit }}
+          </form>
+          
+          <h6>Existing Accounts:</h6>
+          <ul>
+            {% for account in existing_accounts %}
+              <li>{{ account.name }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

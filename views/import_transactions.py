@@ -6,7 +6,7 @@ from models.transaction import Transaction
 from app import db
 import re
 
-def parse_transactions(file, account_type):
+def parse_transactions(file, account_id):
     # Read the file using pandas
     df = pd.read_csv(file)
 
@@ -22,7 +22,7 @@ def parse_transactions(file, account_type):
                 date=date_object,
                 amount=row["amount"],
                 description=extract_name_from_description(row["description"]),
-                account=account_type,
+                account=account_id,
                 category='Uncategorized'
             )
             # Add the user ID to the transaction
