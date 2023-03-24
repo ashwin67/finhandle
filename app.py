@@ -7,6 +7,9 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 from datetime import datetime
+from flask import jsonify
+from flask_login import login_required
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finhandle.db'  # Use the appropriate database URI for your setup
@@ -18,7 +21,7 @@ db.init_app(app)
 
 from models.fin_user import FinUser
 from models.transaction import Transaction
-from models.parameter import Parameter
+from models.parameters import Account, Category
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -31,7 +34,7 @@ GOOGLE_DISCOVERY_DOC = (
     "https://accounts.google.com/.well-known/openid-configuration"
 )
 
-from views.forms import TransactionUploadForm, AddAccountForm
+from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
 from views.auth import auth
 from views.import_transactions import parse_transactions
 app.register_blueprint(auth, url_prefix='/auth')
@@ -54,11 +57,11 @@ def index():
 def import_transactions():
     form = TransactionUploadForm()
     add_account_form = AddAccountForm()
-    existing_accounts = Parameter.query.filter_by(type='account').all()
+    existing_accounts = Account.query.filter_by(type='account').all()
     if form.validate_on_submit():
         file = form.file.data
-        account_type = Parameter.query.get(form.account.data)
-        parse_transactions(file, account_type)
+        account_id = form.account.data
+        parse_transactions(file, account_id)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("index"))
     return render_template("import_transactions.html", form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
@@ -68,19 +71,47 @@ def add_account():
     form = AddAccountForm()
     if form.validate_on_submit():
         account_name = form.account_name.data
-        new_account = Parameter(type="account", name=account_name)
+        new_account = Account(type="account", name=account_name)
         db.session.add(new_account)
         db.session.commit()
         flash("Account added successfully!", "success")
     return redirect(url_for("import_transactions"))
 
+@app.route("/add_category", methods=["POST"])
+def add_category():
+    form = AddCategoryForm()
+    if form.validate_on_submit():
+        category = Category(name=form.category_name.data, user_id=current_user.id)
+        db.session.add(category)
+        db.session.add(category)
+        db.session.commit()
+        flash("Category added successfully!", "success")
+    return redirect(url_for("transactions"))
+
 @app.route("/transactions")
 def transactions():
+    add_category_form = AddCategoryForm()
     user_id = current_user.id
     page = request.args.get('page', 1, type=int)
     per_page = 50
     transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
-    return render_template("transactions.html", transactions=transactions)
+    return render_template("transactions.html", add_category_form=add_category_form, transactions=transactions)
+
+@app.route('/transactions/update_category', methods=['POST'])
+@login_required
+def update_category():
+    transaction_id = request.form.get('transaction_id')
+    category_id = request.form.get('category_id')
+
+    transaction = Transaction.query.get(transaction_id)
+    category = Category.query.get(category_id) if category_id else None
+
+    if transaction:
+        transaction.category = category
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    else:
+        return jsonify({'status': 'error'})
 
 @app.route('/delete_all_transactions', methods=['GET', 'POST'])
 def delete_all_transactions():

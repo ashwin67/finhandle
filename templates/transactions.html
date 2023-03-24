@@ -9,6 +9,37 @@
   <h1>Transactions</h1>
   <a href="{{ url_for('import_transactions') }}">Import Transactions</a>
   <button onclick="location.href='{{ url_for('delete_all_transactions') }}'">Delete All Transactions</button>
+  <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+    Add Category
+  </button>
+  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCategoryModalLabel">Add Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addCategoryForm" action="{{ url_for('add_category') }}" method="POST">
+            {{ add_category_form.hidden_tag() }}
+            {{ add_category_form.category_name.label }} {{ add_category_form.category_name }}
+            {{ add_category_form.submit }}
+          </form>
+          
+          <h6>Existing Categories:</h6>
+          <ul>
+            {% for category in existing_categories %}
+              <li>{{ category.name }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <table id="transactions-table">
     <thead>
       <tr>
@@ -25,8 +56,15 @@
           <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
           <td>{{ transaction.amount }}</td>
           <td>{{ transaction.description }}</td>
-          <td>{{ transaction.account }}</td>
-          <td>{{ transaction.category }}</td>
+          <td>{{ transaction.account.name }}</td>
+          <td>
+            <select class="category-dropdown" data-transaction-id="{{ transaction.id }}">
+                <option value="" {% if transaction.category is none %}selected{% endif %}>-- Select Category --</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if transaction.category is not none and category.id == transaction.category.id %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+          </td>
           <td><button onclick="location.href='{{ url_for('delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
         </tr>
       {% endfor %}
@@ -50,5 +88,33 @@
       $('#transactions-table').DataTable();
   });
   </script>
+  <script>
+    $(document).ready(function() {
+        $('.category-dropdown').on('change', function() {
+          var transaction_id = $(this).data('transaction-id');
+          var category_id = $(this).val();
+            
+            $.ajax({
+                url: "{{ url_for('update_category') }}",
+                type: 'POST',
+                data: {
+                    'transaction_id': transaction_id,
+                    'category_id': category_id
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        console.log('Category updated successfully');
+                    } else {
+                        console.log('Error updating category');
+                    }
+                },
+                error: function() {
+                    console.log('Error updating category');
+                }
+            });
+        });
+    });
+</script>
+
   
 {% endblock %}
