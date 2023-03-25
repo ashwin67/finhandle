@@ -6,7 +6,44 @@
         <title>FinHandle{% block title %}{% endblock %}</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
         <!-- Add this line inside the <head> section -->
-        
+          <style>
+            .modal {
+              display: none;
+              position: fixed;
+              z-index: 1;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              background-color: rgba(0, 0, 0, 0.4);
+            }
+          
+            .modal-content {
+              background-color: #fefefe;
+              margin: 15% auto;
+              padding: 20px;
+              border: 1px solid #888;
+              width: 80%;
+              max-width: 400px;
+            }
+
+            .close {
+              color: #aaaaaa;
+              float: right;
+              font-size: 28px;
+              font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+              color: #000;
+              text-decoration: none;
+              cursor: pointer;
+            }
+          </style>
+
+          
         {% block extra_header %}{% endblock %}
     </head>
 <body>
@@ -20,10 +57,20 @@
                     <a class="nav-link" href="/transactions/import">Import</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="/auth/login">Login</a>
+                    {% if current_user.is_authenticated %}
+                    {% else %}
+                      <button type="button"  class="nav-link btn btn-link" id="registerButton">Register</button>
+                    {% endif %}                  
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="/auth/register">Register</a>
+                    {% if current_user.is_authenticated %}
+                      <form method="post" action="{{ url_for('auth.logout') }}" style="display: inline;">
+                        <button type="submit" class="nav-link btn btn-link">Logout</button>
+                      </form>
+                      <span>{{ current_user.username }}</span>
+                    {% else %}
+                      <button type="button"  class="nav-link btn btn-link" id="loginButton">Login</button>
+                    {% endif %}                  
                   </li>
                 </ul>
               </div>
@@ -37,6 +84,127 @@
     <footer>
         <!-- Your footer content -->
     </footer>
+
+    <div id="registerModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Register</h2>
+        <form method="post" action="{{ url_for('auth.register') }}">
+          <div>
+            <label for="registerUsername">Username:</label>
+            <input type="text" id="registerUsername" name="username" required>
+          </div>
+          <div>
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" name="email" required>
+          </div>
+          <div>
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" name="password" required>
+          </div>          
+          <button type="submit">Register</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Login</h2>
+        <form method="post" action="{{ url_for('auth.login') }}">
+          <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      var loginModal = document.getElementById("loginModal");
+      var loginBtn = document.getElementById("loginButton");
+      var loginSpan = document.getElementsByClassName("close")[0];
+
+      loginBtn.onclick = function() {
+        loginModal.style.display = "block";
+      }
+
+      loginSpan.onclick = function() {
+        loginModal.style.display = "none";
+      }
+
+      var registerModal = document.getElementById("registerModal");
+      var registerBtn = document.getElementById("registerButton");
+      var registerSpan = document.getElementsByClassName("close")[1];
+
+      registerBtn.onclick = function() {
+        registerModal.style.display = "block";
+      }
+
+      registerSpan.onclick = function() {
+        registerModal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == loginModal) {
+          loginModal.style.display = "none";
+        } else if (event.target == registerModal) {
+          registerModal.style.display = "none";
+        }
+      }
+
+      document.getElementById("loginModal").querySelector("form").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      var formData = new FormData(event.target);
+
+      fetch("{{ url_for('auth.login') }}", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    });
+
+    document.getElementById("registerModal").querySelector("form").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      var formData = new FormData(event.target);
+
+      fetch("{{ url_for('auth.register') }}", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === "success") {
+            window.location.reload();
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    });
+
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybB5eD4qNMqL62nCtfDq4m2zr3G3y3IOz//ftA2zX2zMAshRl" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
