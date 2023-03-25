@@ -48,34 +48,40 @@
     </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-              <a class="navbar-brand" href="/">FinHandle</a>
-              <div class="collapse navbar-collapse" id="navbarNav">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">FinHandle</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                  <li class="nav-item">
-                    <a class="nav-link" href="/transactions/import">Import</a>
-                  </li>
-                  <li class="nav-item">
-                    {% if current_user.is_authenticated %}
-                    {% else %}
-                      <button type="button"  class="nav-link btn btn-link" id="registerButton">Register</button>
-                    {% endif %}                  
-                  </li>
-                  <li class="nav-item">
-                    {% if current_user.is_authenticated %}
-                      <form method="post" action="{{ url_for('auth.logout') }}" style="display: inline;">
-                        <button type="submit" class="nav-link btn btn-link">Logout</button>
-                      </form>
-                      <span>{{ current_user.username }}</span>
-                    {% else %}
-                      <button type="button"  class="nav-link btn btn-link" id="loginButton">Login</button>
-                    {% endif %}                  
-                  </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions/import">Import</a>
+                    </li>
+                    {% if not current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <button type="button" class="nav-link btn btn-link" id="registerButton">Register</button>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        {% if current_user.is_authenticated %}
+                        <div class="d-flex align-items-center">
+                            <span class="nav-link">{{ current_user.username }}</span>
+                            <form method="post" action="{{ url_for('auth.logout') }}" class="nav-link p-0" style="display: inline;">
+                                <button type="submit" class="btn btn-link">Logout</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <button type="button" class="nav-link btn btn-link" id="loginButton">Login</button>
+                        {% endif %}
+                    </li>
                 </ul>
-              </div>
             </div>
-          </nav>
+        </div>
+    </nav>
+    
+    
     </header>
 
     {% block content %}
