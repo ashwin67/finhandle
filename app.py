@@ -44,7 +44,12 @@ app.register_blueprint(auth, url_prefix='/auth')
 def index():
     if current_user.is_authenticated:
         total_balance = current_user.total_balance
-        monthly_spending_by_category = current_user.get_monthly_spending_by_category()
+        categories = Category.query.filter_by(user_id=current_user.id).all()
+        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        monthly_spending_by_category = [
+            {"category": category.name, "amount": sum(transaction.amount for transaction in transactions if transaction.category_id == category.id)}
+            for category in categories
+            ]
     else:
         total_balance = 0
         monthly_spending_by_category = {}
@@ -95,7 +100,8 @@ def transactions():
     page = request.args.get('page', 1, type=int)
     per_page = 50
     transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
-    return render_template("transactions.html", add_category_form=add_category_form, transactions=transactions)
+    categories = Category.query.all()
+    return render_template("transactions.html", add_category_form=add_category_form, categories=categories, transactions=transactions)
 
 @app.route('/transactions/update_category', methods=['POST'])
 @login_required
