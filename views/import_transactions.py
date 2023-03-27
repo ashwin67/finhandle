@@ -33,6 +33,16 @@ def extract_name_from_description(description):
     name_pattern = re.compile(r"/NAME/(.*?)/")
     match = name_pattern.search(description)
     if match:
-        return match.group(1)
+        name = match.group(1)
     else:
-        return ""
+        # Use the description as the name when the /NAME/ pattern is not found
+        name = description
+
+    # Remove long numbers
+    name = re.sub(r'\d{3,}', '', name)
+
+    # Replace multiple spaces with a single space
+    name = re.sub(r'\s{2,}', ' ', name)
+
+    return name.strip()
+
