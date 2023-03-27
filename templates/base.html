@@ -1,3 +1,5 @@
+{% from 'import_transactions_modal.html' import import_transactions_modal %}
+{{ import_transactions_modal(form, add_account_form, existing_accounts) }}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -28,6 +30,10 @@
               max-width: 400px;
             }
 
+            .modal-backdrop {
+              z-index: -1;
+            }
+
             .close {
               color: #aaaaaa;
               float: right;
@@ -45,7 +51,8 @@
 
           
         {% block extra_header %}{% endblock %}
-    </head>
+
+      </head>
 <body>
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -56,9 +63,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                  {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/transactions/import">Import</a>
+                      <a class="nav-link" href="/transactions/import" id="importLink">Import</a>
                     </li>
+                    {% endif %}
+
                     {% if not current_user.is_authenticated %}
                     <li class="nav-item">
                         <button type="button" class="nav-link btn btn-link" id="registerButton">Register</button>
@@ -131,29 +141,49 @@
       </div>
     </div>
 
+
     <script>
+
+      document.addEventListener('DOMContentLoaded', function () {
+              const importLink = document.getElementById('importLink');
+              const importTransactionsModal = new bootstrap.Modal(document.getElementById('importTransactionsModal'));
+
+              importLink.addEventListener('click', function (event) {
+                  event.preventDefault();
+                  importTransactionsModal.show();
+              });
+          });
+
       var loginModal = document.getElementById("loginModal");
       var loginBtn = document.getElementById("loginButton");
       var loginSpan = document.getElementsByClassName("close")[0];
 
-      loginBtn.onclick = function() {
-        loginModal.style.display = "block";
+      if (loginBtn) {
+        loginBtn.onclick = function() {
+          loginModal.style.display = "block";
+        }
       }
 
-      loginSpan.onclick = function() {
-        loginModal.style.display = "none";
+      if (loginSpan) {
+        loginSpan.onclick = function() {
+          loginModal.style.display = "none";
+        }
       }
 
       var registerModal = document.getElementById("registerModal");
       var registerBtn = document.getElementById("registerButton");
       var registerSpan = document.getElementsByClassName("close")[1];
 
-      registerBtn.onclick = function() {
-        registerModal.style.display = "block";
+      if (registerBtn) {
+        registerBtn.onclick = function() {
+          registerModal.style.display = "block";
+        }
       }
 
-      registerSpan.onclick = function() {
-        registerModal.style.display = "none";
+      if (registerSpan) {
+        registerSpan.onclick = function() {
+          registerModal.style.display = "none";
+        }
       }
 
       window.onclick = function(event) {
@@ -212,8 +242,8 @@
 
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybB5eD4qNMqL62nCtfDq4m2zr3G3y3IOz//ftA2zX2zMAshRl" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.min.js" integrity="sha384-heAjqF+bCxXpCWLa6Zhcp4fu20XoNIA98ecBC1YkdXhszjoejr5y9Q77hIrv8R9i" crossorigin="anonymous"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

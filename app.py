@@ -46,6 +46,9 @@ def index():
         total_balance = current_user.total_balance
         categories = Category.query.filter_by(user_id=current_user.id).all()
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        form = TransactionUploadForm()
+        add_account_form = AddAccountForm()
+        existing_accounts = Account.query.filter_by(type='account').all()
         monthly_spending_by_category = [
             {"category": category.name, "amount": sum(transaction.amount for transaction in transactions if transaction.category_id == category.id)}
             for category in categories
@@ -53,13 +56,25 @@ def index():
     else:
         total_balance = 0
         monthly_spending_by_category = {}
-    return render_template('index.html', total_balance=total_balance, monthly_spending_by_category=monthly_spending_by_category)
+        form = None
+        add_account_form = None
+        existing_accounts = None
+    return render_template('index.html', total_balance=total_balance, monthly_spending_by_category=monthly_spending_by_category, form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
 
-
-# Add more routes here for your views (e.g., stocks, assets, summary)
 
 @app.route("/transactions/import", methods=["GET", "POST"])
 def import_transactions():
+    if current_user.is_authenticated:
+        total_balance = current_user.total_balance
+        categories = Category.query.filter_by(user_id=current_user.id).all()
+        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        monthly_spending_by_category = [
+            {"category": category.name, "amount": sum(transaction.amount for transaction in transactions if transaction.category_id == category.id)}
+            for category in categories
+            ]
+    else:
+        total_balance = 0
+        monthly_spending_by_category = {}
     form = TransactionUploadForm()
     add_account_form = AddAccountForm()
     existing_accounts = Account.query.filter_by(type='account').all()
@@ -69,7 +84,7 @@ def import_transactions():
         parse_transactions(file, account_id)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("index"))
-    return render_template("import_transactions.html", form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
+    return render_template('base.html', total_balance=total_balance, monthly_spending_by_category=monthly_spending_by_category, form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
 
 @app.route("/add_account", methods=["POST"])
 def add_account():

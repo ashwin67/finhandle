@@ -22,7 +22,7 @@
                   <div class="card-header">Total Balance</div>
                   <div class="card-body">
                     {% if current_user.is_authenticated %}
-                    <h4 class="card-title">${{ total_balance|round(2) }}</h4>
+                    <h4 class="card-title">${{ total_balance|default(0)|round(2) }}</h4>
                     {% else %}
                     <h4 class="card-title">Please Login</h4>
                     {% endif %}
@@ -34,7 +34,7 @@
               <div class="card text-white bg-success mb-3">
                   <div class="card-header">Income This Month</div>
                   <div class="card-body">
-                      <h4 class="card-title">${{ income_this_month }}</h4>
+                      <h4 class="card-title">${{ income_this_month|default(0)|round(2) }}</h4>
                   </div>
               </div>
           </div>
@@ -42,7 +42,7 @@
               <div class="card text-white bg-danger mb-3">
                   <div class="card-header">Expenses This Month</div>
                   <div class="card-body">
-                      <h4 class="card-title">${{ expenses_this_month }}</h4>
+                      <h4 class="card-title">${{ expenses_this_month|default(0)|round(2) }}</h4>
                   </div>
               </div>
           </div>
@@ -71,7 +71,7 @@
 {% if current_user.is_authenticated %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    var monthlySpendingByCategory = {{ monthly_spending_by_category|tojson }};
+    var monthlySpendingByCategory = {{ monthly_spending_by_category|default([])|tojson }};
     var ctx = document.getElementById('myChart').getContext('2d');
     var categories = Object.keys(monthlySpendingByCategory);
     var datasets = categories.map(function(category, index) {
