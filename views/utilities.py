@@ -3,15 +3,19 @@ from flask_login import current_user
 from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
 from models.parameters import Account, Category
 from models.transaction import Transaction
+from collections import defaultdict
 
 def get_monthly_spending_by_category(categories, transactions):
-    return [
-        {
-            "category": category.name,
-            "amount": sum(transaction.amount for transaction in transactions if transaction.category_id == category.id)
-        }
-        for category in categories
-    ]
+    monthly_spending = defaultdict(lambda: [0] * 12)
+
+    for transaction in transactions:
+        if transaction.category_id is not None:
+            category_name = next(category.name for category in categories if category.id == transaction.category_id)
+            month_index = transaction.date.month - 1
+            monthly_spending[category_name][month_index] += transaction.amount
+
+    return monthly_spending
+
 
 def get_base_template_data():
     data = {
