@@ -1,4 +1,8 @@
-# utilities.py
+from flask import render_template
+from flask_login import current_user
+from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
+from models.parameters import Account, Category
+from models.transaction import Transaction
 
 def get_monthly_spending_by_category(categories, transactions):
     return [
@@ -8,3 +12,19 @@ def get_monthly_spending_by_category(categories, transactions):
         }
         for category in categories
     ]
+
+def get_base_template_data():
+    data = {
+        'add_category_form': None,
+        'existing_categories': [],
+        'add_account_form': None,
+        'existing_accounts': None
+    }
+
+    if current_user.is_authenticated:
+        data['add_category_form'] = AddCategoryForm()
+        data['existing_categories'] = Category.query.filter_by(user_id=current_user.id).all()
+        data['add_account_form'] = AddAccountForm()
+        data['existing_accounts'] = Account.query.filter_by(type='account').all()
+
+    return data

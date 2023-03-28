@@ -6,32 +6,25 @@ from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
 from views.import_transactions import parse_transactions
 from models.parameters import Account, Category
 from models.transaction import Transaction
-from views.utilities import get_monthly_spending_by_category
+from views.utilities import get_monthly_spending_by_category, get_base_template_data
 from app import db
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+
+    base_data = get_base_template_data()
     if current_user.is_authenticated:
-        add_category_form = AddCategoryForm()
-        categories = Category.query.all()
         total_balance = current_user.total_balance
-        categories = Category.query.filter_by(user_id=current_user.id).all()
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
         form = TransactionUploadForm()
-        add_account_form = AddAccountForm()
-        existing_accounts = Account.query.filter_by(type='account').all()
-        monthly_spending_by_category = get_monthly_spending_by_category(categories, transactions)
+        monthly_spending_by_category = get_monthly_spending_by_category(base_data['existing_categories'], transactions)
     else:
         total_balance = 0
-        add_category_form = None
-        categories = []
         monthly_spending_by_category = {}
         form = None
-        add_account_form = None
-        existing_accounts = None
-    return render_template('index.html', total_balance=total_balance, add_category_form=add_category_form, existing_categories=categories, monthly_spending_by_category=monthly_spending_by_category, form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
+    return render_template('index.html', total_balance=total_balance, form=form, monthly_spending_by_category=monthly_spending_by_category, **base_data)
 
 
 @main.route("/transactions/import", methods=["GET", "POST"])
@@ -79,13 +72,12 @@ def add_category():
 
 @main.route("/transactions")
 def transactions():
-    add_category_form = AddCategoryForm()
+    base_data = get_base_template_data()
     user_id = current_user.id
     page = request.args.get('page', 1, type=int)
     per_page = 50
     transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
-    categories = Category.query.all()
-    return render_template("transactions.html", add_category_form=add_category_form, categories=categories, transactions=transactions)
+    return render_template("transactions.html", transactions=transactions, **base_data)
 
 @main.route('/transactions/update_category', methods=['POST'])
 @login_required
