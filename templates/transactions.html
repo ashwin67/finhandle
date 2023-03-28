@@ -7,7 +7,7 @@
 {% endblock %}
 {% block content %}
   <h1>Transactions</h1>
-  <button onclick="location.href='{{ url_for('delete_all_transactions') }}'">Delete All Transactions</button>
+  <button onclick="location.href='{{ url_for('main.delete_all_transactions') }}'">Delete All Transactions</button>
   <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
     Add Category
   </button>
@@ -19,7 +19,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="addCategoryForm" action="{{ url_for('add_category') }}" method="POST">
+          <form id="addCategoryForm" action="{{ url_for('main.add_category') }}" method="POST">
             {{ add_category_form.hidden_tag() }}
             {{ add_category_form.category_name.label }} {{ add_category_form.category_name }}
             {{ add_category_form.submit }}
@@ -64,16 +64,16 @@
                 {% endfor %}
             </select>
           </td>
-          <td><button onclick="location.href='{{ url_for('delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
+          <td><button onclick="location.href='{{ url_for('main.delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
         </tr>
       {% endfor %}
       <div>
         {% if transactions.has_prev %}
-            <a href="{{ url_for('transactions', page=transactions.prev_num) }}">Previous</a>
+            <a href="{{ url_for('main.transactions', page=transactions.prev_num) }}">Previous</a>
         {% endif %}
         <span>Page {{ transactions.page }} of {{ transactions.pages }}</span>
         {% if transactions.has_next %}
-            <a href="{{ url_for('transactions', page=transactions.next_num) }}">Next</a>
+            <a href="{{ url_for('main.transactions', page=transactions.next_num) }}">Next</a>
         {% endif %}
       </div>
     </tbody>
@@ -94,7 +94,7 @@
           var category_id = $(this).val();
             
             $.ajax({
-                url: "{{ url_for('update_category') }}",
+                url: "{{ url_for('main.update_category') }}",
                 type: 'POST',
                 data: {
                     'transaction_id': transaction_id,
