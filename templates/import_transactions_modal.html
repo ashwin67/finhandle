@@ -1,4 +1,4 @@
-{% macro import_transactions_modal(form=None, add_account_form=None, existing_accounts=None) %}
+{% macro import_transactions_modal(transaction_form=None, add_account_form=None, existing_accounts=None) %}
 <div class="modal" id="importTransactionsModal" tabindex="-1" aria-labelledby="importTransactionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -7,12 +7,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                {% if form %}
+                {% if transaction_form %}
                 <form action="{{ url_for('main.import_transactions') }}" method="POST" enctype="multipart/form-data">
-                    {{ form.csrf_token(id='transaction_upload_csrf_token') }}
-                    {{ form.account.label }} {{ form.account }}
-                    {{ form.file.label }} {{ form.file }}
-                    {{ form.submit }}
+                    {{ transaction_form.csrf_token(id='transaction_upload_csrf_token') }}
+                    {{ transaction_form.account.label }} {{ transaction_form.account }}
+                    {{ transaction_form.file.label }} {{ transaction_form.file }}
+                    {{ transaction_form.submit }}
                 </form>
                 {% endif %}
           </div>

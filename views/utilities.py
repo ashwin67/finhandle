@@ -18,7 +18,9 @@ def get_base_template_data():
         'add_category_form': None,
         'existing_categories': [],
         'add_account_form': None,
-        'existing_accounts': None
+        'existing_accounts': None,
+        'total_balance': 0,
+        'transaction_form': None
     }
 
     if current_user.is_authenticated:
@@ -26,5 +28,8 @@ def get_base_template_data():
         data['existing_categories'] = Category.query.filter_by(user_id=current_user.id).all()
         data['add_account_form'] = AddAccountForm()
         data['existing_accounts'] = Account.query.filter_by(type='account').all()
+        data['total_balance'] = current_user.total_balance
+        data['transaction_form'] = TransactionUploadForm()
+
 
     return data

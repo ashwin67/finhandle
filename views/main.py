@@ -16,37 +16,29 @@ def index():
 
     base_data = get_base_template_data()
     if current_user.is_authenticated:
-        total_balance = current_user.total_balance
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-        form = TransactionUploadForm()
         monthly_spending_by_category = get_monthly_spending_by_category(base_data['existing_categories'], transactions)
     else:
-        total_balance = 0
         monthly_spending_by_category = {}
-        form = None
-    return render_template('index.html', total_balance=total_balance, form=form, monthly_spending_by_category=monthly_spending_by_category, **base_data)
+    return render_template('index.html', monthly_spending_by_category=monthly_spending_by_category, **base_data)
 
 
 @main.route("/transactions/import", methods=["GET", "POST"])
 def import_transactions():
+    base_data = get_base_template_data()
     if current_user.is_authenticated:
-        total_balance = current_user.total_balance
-        categories = Category.query.filter_by(user_id=current_user.id).all()
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-        monthly_spending_by_category = get_monthly_spending_by_category(categories, transactions)
+        monthly_spending_by_category = get_monthly_spending_by_category(base_data['existing_categories'], transactions)
     else:
-        total_balance = 0
         monthly_spending_by_category = {}
     form = TransactionUploadForm()
-    add_account_form = AddAccountForm()
-    existing_accounts = Account.query.filter_by(type='account').all()
     if form.validate_on_submit():
         file = form.file.data
         account_id = form.account.data
         parse_transactions(file, account_id)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("main.index"))
-    return render_template('base.html', total_balance=total_balance, monthly_spending_by_category=monthly_spending_by_category, form=form, add_account_form=add_account_form, existing_accounts=existing_accounts)
+    return render_template('base.html', monthly_spending_by_category=monthly_spending_by_category, **base_data)
 
 @main.route("/add_account", methods=["POST"])
 def add_account():
@@ -68,7 +60,7 @@ def add_category():
         db.session.add(category)
         db.session.commit()
         flash("Category added successfully!", "success")
-    return redirect(url_for("main.transactions"))
+    return redirect(url_for("main.index"))
 
 @main.route("/transactions")
 def transactions():

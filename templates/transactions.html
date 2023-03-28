@@ -28,7 +28,7 @@
           <td>
             <select class="category-dropdown" data-transaction-id="{{ transaction.id }}">
                 <option value="" {% if transaction.category is none %}selected{% endif %}>-- Select Category --</option>
-                {% for category in categories %}
+                {% for category in existing_categories %}
                     <option value="{{ category.id }}" {% if transaction.category is not none and category.id == transaction.category.id %}selected{% endif %}>{{ category.name }}</option>
                 {% endfor %}
             </select>
