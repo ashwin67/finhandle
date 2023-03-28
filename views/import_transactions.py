@@ -38,11 +38,16 @@ def extract_name_from_description(description):
         # Use the description as the name when the /NAME/ pattern is not found
         name = description
 
-    # Remove long numbers
-    name = re.sub(r'\d{3,}', '', name)
+    # Remove long numbers and any words in all caps that accompany them
+    name = re.sub(r'(\b[A-Z]+\b\s*)?\d{5,}(\s*\b[A-Z]+\b)?', '', name)
+
+    # Remove date or time-like strings
+    name = re.sub(r'\b\d{1,4}[-/:.]\d{1,2}[-/:.]\d{1,4}\b', '', name)
+    name = re.sub(r'\b\d{1,2}:\d{2}(:\d{2})?\b', '', name)
 
     # Replace multiple spaces with a single space
     name = re.sub(r'\s{2,}', ' ', name)
 
     return name.strip()
+
 
