@@ -23,14 +23,20 @@ def index():
     return render_template('index.html', monthly_spending_by_category=monthly_spending_by_category, **base_data)
 
 
+@main.route("/transactions")
+def transactions():
+    base_data = get_base_template_data()
+    user_id = current_user.id
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
+    return render_template("transactions.html", transactions=transactions, **base_data)
+
 @main.route("/transactions/import", methods=["GET", "POST"])
 def import_transactions():
     base_data = get_base_template_data()
     if current_user.is_authenticated:
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-        monthly_spending_by_category = get_monthly_spending_by_category(base_data['existing_categories'], transactions)
-    else:
-        monthly_spending_by_category = {}
     form = TransactionUploadForm()
     if form.validate_on_submit():
         file = form.file.data
@@ -38,7 +44,7 @@ def import_transactions():
         parse_transactions(file, account_id)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("main.index"))
-    return render_template('base.html', monthly_spending_by_category=monthly_spending_by_category, **base_data)
+    return render_template('base.html', **base_data)
 
 @main.route("/add_account", methods=["POST"])
 def add_account():
@@ -61,15 +67,6 @@ def add_category():
         db.session.commit()
         flash("Category added successfully!", "success")
     return redirect(url_for("main.index"))
-
-@main.route("/transactions")
-def transactions():
-    base_data = get_base_template_data()
-    user_id = current_user.id
-    page = request.args.get('page', 1, type=int)
-    per_page = 50
-    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
-    return render_template("transactions.html", transactions=transactions, **base_data)
 
 @main.route('/transactions/update_category', methods=['POST'])
 @login_required
@@ -102,11 +99,6 @@ def delete_transaction(transaction_id):
         db.session.commit()
     return redirect(url_for('main.transactions'))
 
-
-@main.route("/authorize")
-def authorize():
-    # Implement OAuth2 authorization functionality
-    pass
 
 @main.route('/api/transactions')
 @login_required
