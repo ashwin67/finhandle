@@ -78,6 +78,16 @@
                     </li>
                     {% endif %}
                     {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Settings
+                      </a>
+                      <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addAccountModal">Add Account</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Add Category</a></li>
+                      </ul>
+                    </li>
+
                     <li class="nav-item">
                       <span class="nav-link">{{ current_user.username }}</span>
                     </li>
@@ -144,6 +154,64 @@
       </div>
     </div>
 
+
+    {% if add_account_form %}
+    <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="addAccountModalLabel">Add Account</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  {% if add_account_form %}
+                  <form id="addAccountForm" action="{{ url_for('main.add_account') }}" method="POST">
+                      {{ add_account_form.csrf_token(id='add_account_csrf_token') }}
+                      {{ add_account_form.account_name.label }} {{ add_account_form.account_name }}
+                      {{ add_account_form.submit }}
+                  </form>
+                  {% endif %}
+
+                  {% if existing_accounts %}
+                  <h6>Existing Accounts:</h6>
+                  <ul>
+                      {% for account in existing_accounts %}
+                          <li>{{ account.name }}</li>
+                      {% endfor %}
+                  </ul>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if add_category_form %}
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCategoryModalLabel">Add Account</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addCategoryForm" action="{{ url_for('main.add_category') }}" method="POST">
+              {{ add_category_form.hidden_tag() }}
+              {{ add_category_form.category_name.label }} {{ add_category_form.category_name }}
+              {{ add_category_form.submit }}
+            </form>
+            
+            <h6>Existing Categories:</h6>
+            <ul>
+              {% for category in existing_categories %}
+                <li>{{ category.name }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
     <script>
 
