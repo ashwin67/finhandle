@@ -4,6 +4,7 @@ from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
 from models.parameters import Account, Category
 from models.transaction import Transaction
 from collections import defaultdict
+import datetime
 
 def get_monthly_spending_by_category(categories, transactions):
     monthly_spending = defaultdict(lambda: [0] * 12)
@@ -11,11 +12,13 @@ def get_monthly_spending_by_category(categories, transactions):
     for transaction in transactions:
         if transaction.category_id is not None:
             category_name = next(category.name for category in categories if category.id == transaction.category_id)
-            month_index = transaction.date.month - 1
-            monthly_spending[category_name][month_index] += transaction.amount
+        else:
+            category_name = "Uncategorized"
+
+        month_index = transaction.date.month - 1
+        monthly_spending[category_name][month_index] += transaction.amount
 
     return monthly_spending
-
 
 def get_base_template_data():
     data = {
@@ -35,5 +38,22 @@ def get_base_template_data():
         data['total_balance'] = current_user.total_balance
         data['transaction_form'] = TransactionUploadForm()
 
-
     return data
+
+def get_income_this_month(transactions):
+    now = datetime.datetime.now()
+    income = sum(
+        transaction.amount
+        for transaction in transactions
+        if transaction.amount > 0 and transaction.date.year == now.year and transaction.date.month == now.month
+    )
+    return income
+
+def get_expenses_this_month(transactions):
+    now = datetime.datetime.now()
+    expenses = sum(
+        transaction.amount
+        for transaction in transactions
+        if transaction.amount < 0 and transaction.date.year == now.year and transaction.date.month == now.month
+    )
+    return expenses

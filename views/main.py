@@ -6,7 +6,7 @@ from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
 from views.import_transactions import parse_transactions
 from models.parameters import Account, Category
 from models.transaction import Transaction
-from views.utilities import get_monthly_spending_by_category, get_base_template_data
+from views.utilities import get_monthly_spending_by_category, get_base_template_data, get_income_this_month, get_expenses_this_month
 from app import db
 
 main = Blueprint('main', __name__)
@@ -17,10 +17,18 @@ def index():
     base_data = get_base_template_data()
     if current_user.is_authenticated:
         transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        income_this_month = get_income_this_month(transactions)
+        expenses_this_month = get_expenses_this_month(transactions)
         monthly_spending_by_category = get_monthly_spending_by_category(base_data['existing_categories'], transactions)
     else:
+        income_this_month = 0
+        expenses_this_month = 0
         monthly_spending_by_category = {}
-    return render_template('index.html', monthly_spending_by_category=monthly_spending_by_category, **base_data)
+    return render_template('index.html', 
+        monthly_spending_by_category=monthly_spending_by_category,
+        income_this_month=income_this_month,
+        expenses_this_month=expenses_this_month,
+        **base_data)
 
 
 @main.route("/transactions")
