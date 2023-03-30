@@ -1,5 +1,5 @@
 {% from 'import_transactions_modal.html' import import_transactions_modal %}
-{{ import_transactions_modal(transaction_form, add_account_form, existing_accounts) }}
+{{ import_transactions_modal(transaction_form, custom_mapping_form) }}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -85,6 +85,7 @@
                       <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addAccountModal">Add Account</a></li>
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Add Category</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#customMappingModal">Custom Mapping</a></li>
                       </ul>
                     </li>
 
@@ -154,6 +155,32 @@
       </div>
     </div>
 
+    <div class="modal fade" id="customMappingModal" tabindex="-1" aria-labelledby="customMappingModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="customMappingModalLabel">Custom Mapping</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                {% if custom_mapping_form %}
+                  <form id="customMappingForm" action="{{ url_for('main.add_custom_mapping') }}" method="POST">
+                      {{ custom_mapping_form.hidden_tag() }}
+                      {{ custom_mapping_form.mapping_name.label }} {{ custom_mapping_form.mapping_name }}
+                      {{ custom_mapping_form.date.label }} {{ custom_mapping_form.date }}
+                      {{ custom_mapping_form.description.label }} {{ custom_mapping_form.description }}
+                      {{ custom_mapping_form.amount.label }} {{ custom_mapping_form.amount }}
+                      {{ custom_mapping_form.submit }}
+                  </form>
+                {% endif %}
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  
 
     {% if add_account_form %}
     <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">

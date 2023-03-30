@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user, login_required
-from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
+from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm, CustomMappingForm
 from views.import_transactions import parse_transactions
 from models.parameters import Account, Category
 from models.transaction import Transaction
@@ -107,7 +107,6 @@ def delete_transaction(transaction_id):
         db.session.commit()
     return redirect(url_for('main.transactions'))
 
-
 @main.route('/api/transactions')
 @login_required
 def api_transactions():
@@ -119,3 +118,25 @@ def api_transactions():
         'account': transaction.account,
         'category': transaction.category,
     } for transaction in transactions])
+
+@main.route('/add_custom_mapping', methods=['POST'])
+@login_required
+def add_custom_mapping():
+    form = CustomMappingForm()
+    if form.validate_on_submit():
+        new_mapping = {
+            'mapping_name': form.mapping_name.data,
+            'date': form.date.data,
+            'description': form.description.data,
+            'amount': form.amount.data
+        }
+        if current_user.custom_mappings is None:
+            current_user.custom_mappings = [new_mapping]
+        else:
+            current_user.custom_mappings.append(new_mapping)
+
+        db.session.commit()
+        flash("Custom mapping added successfully.", "success")
+    else:
+        flash("Error: Please fill in all fields correctly.", "danger")
+    return redirect(url_for('main.index'))

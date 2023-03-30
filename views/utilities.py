@@ -1,6 +1,6 @@
 from flask import render_template
 from flask_login import current_user
-from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm
+from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm, CustomMappingForm
 from models.parameters import Account, Category
 from models.transaction import Transaction
 from collections import defaultdict
@@ -27,7 +27,8 @@ def get_base_template_data():
         'add_account_form': None,
         'existing_accounts': None,
         'total_balance': 0,
-        'transaction_form': None
+        'transaction_form': None,
+        'custom_mapping_form': None
     }
 
     if current_user.is_authenticated:
@@ -37,6 +38,7 @@ def get_base_template_data():
         data['existing_accounts'] = Account.query.filter_by(type='account').all()
         data['total_balance'] = current_user.total_balance
         data['transaction_form'] = TransactionUploadForm()
+        data['custom_mapping_form'] = CustomMappingForm()
 
     return data
 

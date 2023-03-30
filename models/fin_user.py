@@ -13,6 +13,7 @@ class FinUser(UserMixin, db.Model):
 
     accounts = db.relationship("Account", back_populates="user")
     categories = db.relationship("Category", back_populates="user")
+    custom_mappings = db.Column(db.JSON, nullable=True)
 
     def __repr__(self):
         return f"<FinUser {self.username}>"
