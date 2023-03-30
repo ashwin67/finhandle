@@ -28,7 +28,7 @@ def get_base_template_data():
         'existing_accounts': None,
         'total_balance': 0,
         'transaction_form': None,
-        'custom_mapping_form': None
+        'custom_mapping_form': None,
     }
 
     if current_user.is_authenticated:
