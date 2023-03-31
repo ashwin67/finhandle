@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 import os
 
 
@@ -11,6 +12,8 @@ app.secret_key = os.urandom(24)  # Generate a random key for secure sessions
 
 db = SQLAlchemy()
 db.init_app(app)
+
+migrate = Migrate(app, db)
 
 from models.fin_user import FinUser
 from models.transaction import Transaction
