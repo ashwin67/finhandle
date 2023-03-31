@@ -6,9 +6,16 @@ from models.transaction import Transaction
 from models.parameters import Account
 from app import db
 import re
+import os
 
 def parse_transactions(file, account_id, custom_mapping=None):
-    df = pd.read_csv(file)
+    file_extension = os.path.splitext(file)[1]
+    if file_extension == '.csv':
+        df = pd.read_csv(file)
+    elif file_extension == '.xls' or file_extension == '.xlsx':
+        df = pd.read_excel(file)
+    else:
+        raise ValueError("Unsupported file type")
     account = Account.query.get(account_id)
     missed_rows = []
 

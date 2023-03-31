@@ -18,7 +18,7 @@ class TransactionUploadForm(FlaskForm):
         super(TransactionUploadForm, self).__init__(*args, **kwargs)
         self.account.choices = [(param.id, param.name) for param in Account.query.filter_by(type='account').all()]
         mappings = current_user.custom_mappings or []
-        self.mapping_key.choices = [('default', 'Default')] + [(i, mapping['mapping_name']) for i, mapping in enumerate(mappings)]
+        self.mapping_key.choices = [(i, mapping['mapping_name']) for i, mapping in enumerate(mappings)] + [('default', 'Default')]
 
 class AddAccountForm(FlaskForm):
     csrf_token = HiddenField(id='add_account_csrf_token')

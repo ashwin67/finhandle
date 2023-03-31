@@ -8,6 +8,9 @@ from models.parameters import Account, Category
 from models.transaction import Transaction
 from views.utilities import get_monthly_spending_by_category, get_base_template_data, get_income_this_month, get_expenses_this_month
 from app import db
+from werkzeug.utils import secure_filename
+import tempfile
+import os
 
 main = Blueprint('main', __name__)
 
@@ -48,13 +51,16 @@ def import_transactions():
     form = TransactionUploadForm()
     if form.validate_on_submit():
         file = form.file.data
+        filename = secure_filename(file.filename)
+        temp_file_path = os.path.join(tempfile.mkdtemp(), filename)
+        file.save(temp_file_path)
         account_id = form.account.data
-        import pdb; pdb.set_trace()
         mapping_key = form.mapping_key.data
         custom_mapping = None
         if mapping_key != 'default':
             custom_mapping = current_user.custom_mappings[int(mapping_key)]
-        parse_transactions(file, account_id, custom_mapping)
+        parse_transactions(temp_file_path, account_id, custom_mapping)
+        os.remove(temp_file_path)
         flash("Transactions imported successfully!", "success")
         return redirect(url_for("main.index"))
     return render_template('base.html', **base_data)
