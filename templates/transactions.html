@@ -7,54 +7,154 @@
 {% endblock %}
 {% block content %}
   <h1>Transactions</h1>
+  <div id="category-keyword-form">
+    <h3>Add keywords to categories</h3>
+    <form>
+        <input type="text" id="keyword" placeholder="Keyword" />
+        <select id="category">
+            <option value="">-- Select Category --</option>
+            {% for category in existing_categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <select id="comparison">
+            <option value="<">&lt;</option>  
+            <option value="=">=</option>
+            <option value=">">&gt;</option>
+        </select>
+        <input type="number" id="amount" placeholder="Amount" />
+        <button type="button" id="add-keyword">Add Keyword</button>
+    </form>
+</div>
+
+<button id="apply-mappings-button">Apply Mappings</button>
+
   <button onclick="location.href='{{ url_for('main.delete_all_transactions') }}'">Delete All Transactions</button>
-  <table id="transactions-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Amount</th>
-        <th>Description</th>
-        <th>Account</th>
-        <th>Category</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for transaction in transactions %}
+  <div id="table-container"></div>
+    <table id="transactions-table">
+      <thead>
         <tr>
-          <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ transaction.amount }}</td>
-          <td>{{ transaction.description }}</td>
-          <td>{{ transaction.account.name }}</td>
-          <td>
-            <select class="category-dropdown" data-transaction-id="{{ transaction.id }}">
-                <option value="" {% if transaction.category is none %}selected{% endif %}>-- Select Category --</option>
-                {% for category in existing_categories %}
-                    <option value="{{ category.id }}" {% if transaction.category is not none and category.id == transaction.category.id %}selected{% endif %}>{{ category.name }}</option>
-                {% endfor %}
-            </select>
-          </td>
-          <td><button onclick="location.href='{{ url_for('main.delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Description</th>
+          <th>Account</th>
+          <th>Category</th>
         </tr>
-      {% endfor %}
-      <div>
-        {% if transactions.has_prev %}
-            <a href="{{ url_for('main.transactions', page=transactions.prev_num) }}">Previous</a>
-        {% endif %}
-        <span>Page {{ transactions.page }} of {{ transactions.pages }}</span>
-        {% if transactions.has_next %}
-            <a href="{{ url_for('main.transactions', page=transactions.next_num) }}">Next</a>
-        {% endif %}
-      </div>
-    </tbody>
-  </table>
+      </thead>
+      <tfoot>
+        <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </tfoot>
+      <tbody>
+        {% for transaction in transactions %}
+          <tr>
+            <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ transaction.amount }}</td>
+            <td>{{ transaction.description }}</td>
+            <td>{{ transaction.account.name }}</td>
+            <td>
+              <select class="category-dropdown" data-transaction-id="{{ transaction.id }}">
+                  <option value="" {% if transaction.category is none %}selected{% endif %}>-- Select Category --</option>
+                  {% for category in existing_categories %}
+                      <option value="{{ category.id }}" {% if transaction.category is not none and category.id == transaction.category.id %}selected{% endif %}>{{ category.name }}</option>
+                  {% endfor %}
+              </select>
+            </td>
+            <td><button onclick="location.href='{{ url_for('main.delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}
 {% block extra_scripts %}
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 <script>
   $(document).ready(function() {
-      $('#transactions-table').DataTable();
+    var table = $('#transactions-table').DataTable({
+      order: [[0, 'asc']], // Sort by date ascending by default
+      initComplete: function() {
+        // Populate the account filter dropdown
+        this.api().column(3).data().unique().sort().each(function(d, j) {
+          $('#account-filter').append('<option value="' + d + '">' + d + '</option>');
+        });
+
+        // Populate the category filter dropdown
+        this.api().column(4).data().unique().sort().each(function(d, j) {
+          $('#category-filter').append('<option value="' + d + '">' + d + '</option>');
+        });
+      }
+    });
+
+    // Apply account filter
+    $('#account-filter').on('change', function() {
+      table.column(3).search(this.value).draw();
+    });
+
+    // Apply category filter
+    $('#category-filter').on('change', function() {
+      table.column(4).search(this.value).draw();
+    });
+
+    // Enable sorting on click for the Account column
+    $('#transactions-table thead th:eq(3)').on('click', function() {
+      table.order([3, table.order()[0][1] === 'asc' ? 'desc' : 'asc']).draw();
+    });
+
+    // Enable sorting on click for the Category column
+    $('#transactions-table thead th:eq(4)').on('click', function() {
+      table.order([4, table.order()[0][1] === 'asc' ? 'desc' : 'asc']).draw();
+    });
   });
+
+
+  </script>
+  <script>
+function addKeywordToCategory() {
+    var keyword = $('#keyword').val();
+    var categoryId = $('#category').val();
+    var comparison = $('#comparison').val();
+    var amount = $('#amount').val();
+
+    if (!keyword || !categoryId || !comparison || !amount) {
+        alert('Please fill in all fields.');
+        return;
+    }
+
+    $.ajax({
+        url: "{{ url_for('main.add_keyword_to_category') }}",
+        type: 'POST',
+        data: {
+            'keyword': keyword,
+            'category_id': categoryId,
+            'comparison': comparison,
+            'amount': amount
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                console.log('Keyword added to category successfully');
+                $('#keyword').val('');
+                $('#category').val('');
+                $('#comparison').val('=');
+                $('#amount').val('');
+            } else {
+                console.log('Error adding keyword to category');
+            }
+        },
+        error: function() {
+            console.log('Error adding keyword to category');
+        }
+    });
+}
+
+$('#add-keyword').click(addKeywordToCategory);
+
   </script>
   <script>
     $(document).ready(function() {
@@ -84,5 +184,24 @@
     });
 </script>
 
+<script>
+    $('#apply-mappings-button').click(function() {
+        $.ajax({
+            url: "{{ url_for('main.apply_mappings') }}",
+            type: 'POST',
+            success: function(response) {
+                if (response.status === 'success') {
+                    console.log('Mappings applied successfully');
+                    location.reload();
+                } else {
+                    console.log('Error applying mappings');
+                }
+            },
+            error: function() {
+                console.log('Error applying mappings');
+            }
+        });
+    });
+</script>
   
 {% endblock %}

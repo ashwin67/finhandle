@@ -3,6 +3,7 @@ from app import db
 from models.transaction import Transaction
 from sqlalchemy import extract
 from datetime import datetime
+from models.parameters import KeywordCategoryMapping
 
 class FinUser(UserMixin, db.Model):
     __tablename__ = 'fin_user'
@@ -47,14 +48,36 @@ class FinUser(UserMixin, db.Model):
             extract('year', Transaction.date) == year
         )
         categories = set(transaction.category for transaction in transactions)
-        monthly_spending_by_category = {category: [0] * 12 for category in categories}
+        categories.add(None)  # Add None to the set of categories to account for transactions without a category
+        monthly_spending_by_category = {str(category): [0] * 12 for category in categories}
 
         for transaction in transactions:
             month = transaction.date.month - 1  # Subtract 1 because list indices start at 0
             category = transaction.category
             amount = transaction.amount
-            monthly_spending_by_category[category][month] += amount
+            if category is not None:
+                category_key = str(category)
+                monthly_spending_by_category[category_key][month] += amount
+            else:
+                # You can decide what to do when the category is None
+                # For example, you can create an "Uncategorized" category
+                uncategorized = "Uncategorized"
+                if uncategorized not in monthly_spending_by_category:
+                    monthly_spending_by_category[uncategorized] = [0] * 12
+                monthly_spending_by_category[uncategorized][month] += amount
 
         return monthly_spending_by_category
     
+    def apply_keyword_mappings(self, transaction):
+        mappings = KeywordCategoryMapping.query.filter_by(user_id=self.id).all()
 
+        for mapping in mappings:
+            if mapping.keyword.lower() in transaction.description.lower():
+                if (
+                    (mapping.comparison == "<" and transaction.amount < mapping.amount) or
+                    (mapping.comparison == "=" and transaction.amount == mapping.amount) or
+                    (mapping.comparison == ">" and transaction.amount > mapping.amount)
+                ):
+                    transaction.category_id = mapping.category_id
+                    db.session.commit()
+                    break

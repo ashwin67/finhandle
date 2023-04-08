@@ -6,6 +6,7 @@ from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm, 
 from views.import_transactions import parse_transactions
 from models.parameters import Account, Category
 from models.transaction import Transaction
+from models.parameters import KeywordCategoryMapping
 from views.utilities import get_monthly_spending_by_category, get_base_template_data, get_income_this_month, get_expenses_this_month
 from app import db
 from werkzeug.utils import secure_filename
@@ -157,3 +158,36 @@ def add_custom_mapping():
 def get_yearly_data(year):
     monthly_spending_by_category = current_user.get_monthly_spending_by_category(year)
     return jsonify(monthly_spending_by_category)
+
+@main.route('/add-keyword-to-category', methods=['POST'])
+@login_required
+def add_keyword_to_category():
+    keyword = request.form.get('keyword')
+    category_id = request.form.get('category_id')
+    comparison = request.form.get('comparison')
+    amount = float(request.form.get('amount'))
+
+    try:
+        new_mapping = KeywordCategoryMapping(
+            user_id=current_user.id,
+            keyword=keyword,
+            category_id=category_id,
+            comparison=comparison,
+            amount=amount
+        )
+        db.session.add(new_mapping)
+        db.session.commit()
+
+        return jsonify(status='success')
+    except Exception as e:
+        print(e)
+        return jsonify(status='error')
+
+@main.route('/apply_mappings', methods=['POST'])
+@login_required
+def apply_mappings():
+    transactions = current_user.get_transactions()
+    for transaction in transactions:
+        current_user.apply_keyword_mappings(transaction)
+    db.session.commit()
+    return jsonify(status='success')

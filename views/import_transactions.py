@@ -35,6 +35,7 @@ def parse_transactions(file, account_id, custom_mapping=None):
                 category=None
             )
             transaction.user_id = current_user.id
+            current_user.apply_keyword_mappings(transaction)
             db.session.add(transaction)
         except Exception as e:
             missed_rows.append(index)
