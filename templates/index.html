@@ -51,6 +51,11 @@
       <div class="row">
             <h3 class="text-center">Monthly Spending Categories</h3>
             {% if current_user.is_authenticated %}
+            <div>
+                <button id="previousYear" onclick="updateYear(-1)">Previous</button>
+                <span id="currentYear"></span>
+                <button id="nextYear" onclick="updateYear(1)">Next</button>
+            </div>            
             <div class="chart-container">
                 <canvas id="myChart"></canvas>
             </div>
@@ -71,61 +76,86 @@
 {% if current_user.is_authenticated %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    var monthlySpendingByCategory = {{ monthly_spending_by_category|default([])|tojson }};
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var categories = Object.keys(monthlySpendingByCategory);
-    var datasets = categories.map(function(category, index) {
+    var currentYear = new Date().getFullYear();
+    document.getElementById('currentYear').innerText = currentYear;
+  
+    function updateYear(offset) {
+      currentYear += offset;
+      document.getElementById('currentYear').innerText = currentYear;
+      loadYearData(currentYear);
+    }
+  
+    function loadYearData(year) {
+      fetch('/get-yearly-data/' + year)
+        .then(response => response.json())
+        .then(data => {
+          monthlySpendingByCategory = data;
+          updateChartData();
+        });
+    }
+  
+    function updateChartData() {
+      var categories = Object.keys(monthlySpendingByCategory);
+      var datasets = categories.map(function (category, index) {
         var data = monthlySpendingByCategory[category];
-        var color = 'hsl(' + (index * 45) + ', 50%, 50%)';  // Generate a different color for each category
+        var color = 'hsl(' + (index * 45) + ', 50%, 50%)'; // Generate a different color for each category
         return {
-            label: category,
-            data: data,
-            backgroundColor: color,
-            borderColor: color,
-            borderWidth: 1,
-            hoverBackgroundColor: color,
-            hoverBorderColor: 'rgba(0,0,0,0.5)'
+          label: category,
+          data: data,
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 1,
+          hoverBackgroundColor: color,
+          hoverBorderColor: 'rgba(0,0,0,0.5)'
         };
-    });
-
+      });
+  
+      myChart.data.datasets = datasets;
+      myChart.update();
+    }
+  
+    // Initialize the chart with data for the current year
+    loadYearData(currentYear);
+  
+    var ctx = document.getElementById('myChart').getContext('2d');
     var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: datasets
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: []
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
         },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        boxWidth: 20
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFontSize: 16,
-                    titleFontColor: '#fff',
-                    bodyFontColor: '#fff',
-                    bodyFontSize: 14,
-                    displayColors: false
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeOutBounce'
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 20
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleFontSize: 16,
+            titleFontColor: '#fff',
+            bodyFontColor: '#fff',
+            bodyFontSize: 14,
+            displayColors: false
+          }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeOutBounce'
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      }
     });
-
-</script>
+  </script>
+  
 {% endif %}
 
 {% endblock %}

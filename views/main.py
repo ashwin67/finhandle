@@ -151,3 +151,9 @@ def add_custom_mapping():
     else:
         flash("Error: Please fill in all fields correctly.", "danger")
     return redirect(url_for('main.index'))
+
+@main.route('/get-yearly-data/<int:year>')
+@login_required
+def get_yearly_data(year):
+    monthly_spending_by_category = current_user.get_monthly_spending_by_category(year)
+    return jsonify(monthly_spending_by_category)

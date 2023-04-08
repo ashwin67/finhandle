@@ -42,9 +42,9 @@ class FinUser(UserMixin, db.Model):
         transactions = self.get_transactions()
         return sum(transaction.amount for transaction in transactions)
 
-    def get_monthly_spending_by_category(self):
+    def get_monthly_spending_by_category(self, year):
         transactions = self.get_transactions().filter(
-            extract('year', Transaction.date) == datetime.utcnow().year
+            extract('year', Transaction.date) == year
         )
         categories = set(transaction.category for transaction in transactions)
         monthly_spending_by_category = {category: [0] * 12 for category in categories}
