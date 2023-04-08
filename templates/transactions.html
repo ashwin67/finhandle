@@ -68,6 +68,15 @@
             <td><button onclick="location.href='{{ url_for('main.delete_transaction', transaction_id=transaction.id) }}'">Delete</button></td>
           </tr>
         {% endfor %}
+      <div>
+        {% if transactions.has_prev %}
+            <a href="{{ url_for('main.transactions', page=transactions.prev_num) }}">Previous</a>
+        {% endif %}
+        <span>Page {{ transactions.page }} of {{ transactions.pages }}</span>
+        {% if transactions.has_next %}
+            <a href="{{ url_for('main.transactions', page=transactions.next_num) }}">Next</a>
+        {% endif %}
+      </div>
       </tbody>
     </table>
   </div>
