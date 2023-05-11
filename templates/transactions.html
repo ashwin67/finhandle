@@ -185,23 +185,27 @@ $('#add-keyword').click(addKeywordToCategory);
 </script>
 
 <script>
-    $('#apply-mappings-button').click(function() {
-        $.ajax({
-            url: "{{ url_for('main.apply_mappings') }}",
-            type: 'POST',
-            success: function(response) {
-                if (response.status === 'success') {
-                    console.log('Mappings applied successfully');
-                    location.reload();
-                } else {
-                    console.log('Error applying mappings');
-                }
-            },
-            error: function() {
-                console.log('Error applying mappings');
-            }
-        });
-    });
+  function applyMappings() {
+      $.getJSON('{{ url_for("main.get_mappings") }}', function(mappings) {
+          for (var i = 0; i < mappings.length; i++) {
+              var mapping = mappings[i];
+              $('#transactions-table tbody tr').each(function() {
+                  var row = $(this);
+                  var description = row.find('td:nth-child(3)').text();
+                  var amount = parseFloat(row.find('td:nth-child(2)').text());
+                  var categoryDropdown = row.find('.category-dropdown');
+
+                  if (description.includes(mapping.keyword) && eval(amount + mapping.comparison + mapping.amount)) {
+                      categoryDropdown.val(mapping.category_id);
+                      categoryDropdown.trigger('change');
+                  }
+              });
+          }
+      });
+  }
+
+  $('#apply-mappings-button').click(applyMappings);
 </script>
+
   
 {% endblock %}

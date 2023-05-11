@@ -12,6 +12,7 @@ from app import db
 from werkzeug.utils import secure_filename
 import tempfile
 import os
+from flask import jsonify
 
 main = Blueprint('main', __name__)
 
@@ -159,7 +160,7 @@ def get_yearly_data(year):
     monthly_spending_by_category = current_user.get_monthly_spending_by_category(year)
     return jsonify(monthly_spending_by_category)
 
-@main.route('/add-keyword-to-category', methods=['POST'])
+@main.route('/add_keyword_to_category', methods=['POST'])
 @login_required
 def add_keyword_to_category():
     keyword = request.form.get('keyword')
@@ -191,3 +192,31 @@ def apply_mappings():
         current_user.apply_keyword_mappings(transaction)
     db.session.commit()
     return jsonify(status='success')
+
+@main.route('/get_mappings', methods=['GET', 'DELETE'])
+@login_required
+def get_mappings():
+    if request.method == 'DELETE':
+        mapping_id = request.args.get('mapping_id')
+        mapping = KeywordCategoryMapping.query.get_or_404(mapping_id)
+        db.session.delete(mapping)
+        db.session.commit()
+        return jsonify(status='success')
+    else:
+        mappings = KeywordCategoryMapping.query.all()
+        result = []
+        for mapping in mappings:
+            result.append({
+                'id': mapping.id,
+                'keyword': mapping.keyword,
+                'category_id': mapping.category_id,
+                'category_name': mapping.category.name,
+                'comparison': mapping.comparison,
+                'amount': mapping.amount
+            })
+        return jsonify(result)
+
+@main.route('/keyword_mappings')
+@login_required
+def keyword_mappings():
+    return render_template('keyword_mappings.html')

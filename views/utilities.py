@@ -1,7 +1,7 @@
 from flask import render_template
 from flask_login import current_user
-from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm, CustomMappingForm
-from models.parameters import Account, Category
+from views.forms import TransactionUploadForm, AddAccountForm, AddCategoryForm, CustomMappingForm, AddKeywordCategoryForm
+from models.parameters import Account, Category, KeywordCategoryMapping
 from models.transaction import Transaction
 from collections import defaultdict
 import datetime
@@ -29,6 +29,8 @@ def get_base_template_data():
         'total_balance': 0,
         'transaction_form': None,
         'custom_mapping_form': None,
+        'add_keyword_category_form': None,
+        'existing_keywords': []
     }
 
     if current_user.is_authenticated:
@@ -39,6 +41,8 @@ def get_base_template_data():
         data['total_balance'] = current_user.total_balance
         data['transaction_form'] = TransactionUploadForm()
         data['custom_mapping_form'] = CustomMappingForm()
+        data['add_keyword_category_form'] = AddKeywordCategoryForm()
+        data['existing_keywords'] = KeywordCategoryMapping.query.filter_by(user_id=current_user.id).all()
 
     return data
 

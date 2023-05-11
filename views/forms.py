@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField, SelectField, StringField
 from wtforms.validators import DataRequired
-from models.parameters import Account, Category
+from models.parameters import Account, Category, KeywordCategoryMapping
 from wtforms import HiddenField
 from wtforms.validators import Optional
 from flask_login import current_user
@@ -37,3 +37,13 @@ class CustomMappingForm(FlaskForm):
     description = StringField('Description Column Name', validators=[DataRequired()])
     amount = StringField('Amount Column Name', validators=[DataRequired()])
     submit = SubmitField('Save')
+
+class AddKeywordCategoryForm(FlaskForm):
+    csrf_token = HiddenField(id='add_keyword_category_csrf_token')
+    keyword = StringField('Keyword', validators=[DataRequired()])
+    category = SelectField('Category', validators=[DataRequired()], coerce=int)
+    submit = SubmitField('Save')
+
+    def __init__(self, *args, **kwargs):
+        super(AddKeywordCategoryForm, self).__init__(*args, **kwargs)
+        self.category.choices = [(param.id, param.name) for param in Category.query.filter_by(user_id=current_user.id).all()]

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %} - Keyword Mappings{% endblock %}
+{% block content %}
+  <h1>Keyword Mappings</h1>
+  <table id="keyword-mappings-table">
+    <thead>
+      <tr>
+        <th>Keyword</th>
+        <th>Category</th>
+        <th>Comparison</th>
+        <th>Amount</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+  function loadMappings() {
+    $.getJSON('{{ url_for("main.get_mappings") }}', function(data) {
+      var tbody = $('#keyword-mappings-table tbody');
+      tbody.empty();
+      for (var i = 0; i < data.length; i++) {
+        var row = $('<tr>');
+        row.append('<td>' + data[i].keyword + '</td>');
+        row.append('<td>' + data[i].category_name + '</td>');
+        row.append('<td>' + data[i].comparison + '</td>');
+        row.append('<td>' + data[i].amount + '</td>');
+        row.append('<td><button class="delete-mapping" data-mapping-id="' + data[i].id + '">Delete</button></td>');
+        tbody.append(row);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    loadMappings();
+
+    $('body').on('click', '.delete-mapping', function() {
+      var mappingId = $(this).data('mapping-id');
+      $.ajax({
+        url: '{{ url_for("main.get_mappings") }}?mapping_id=' + mappingId,
+        type: 'DELETE',
+        success: function(response) {
+          if (response.status === 'success') {
+            loadMappings();
+          } else {
+            console.log('Error deleting mapping');
+          }
+        },
+        error: function() {
+          console.log('Error deleting mapping');
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
